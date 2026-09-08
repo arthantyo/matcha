@@ -4,13 +4,42 @@ import { load } from "cheerio";
 import { XMLParser } from "fast-xml-parser";
 import { apiBaseUrl } from "./Constants";
 
+const DEFAULT_TTL_MS = 5 * 60 * 1000;
+
 export class Fetcher {
+  private static cache = new Map<string, { data: any; expiry: number }>();
+
+  private static async withCache<T>(
+    key: string,
+    fn: () => Promise<T>,
+    ttlMs: number = DEFAULT_TTL_MS,
+  ): Promise<T> {
+    const cached = this.cache.get(key);
+    if (cached && cached.expiry > Date.now()) {
+      return cached.data as T;
+    }
+
+    const data = await fn();
+    this.cache.set(key, { data, expiry: Date.now() + ttlMs });
+    return data;
+  }
+
+  public static clearCache(): void {
+    this.cache.clear();
+  }
+
   public static async getMangaQuote() {
     const { data } = await axios.get(`${apiBaseUrl.quote}/api/random`);
     return data;
   }
 
   public static async getMangaSearch(query: string) {
+    return this.withCache(`getMangaSearch:${query}`, () =>
+      this.fetchMangaSearch(query),
+    );
+  }
+
+  private static async fetchMangaSearch(query: string) {
     const result: Record<string, any> = {};
 
     try {
@@ -44,6 +73,12 @@ export class Fetcher {
   }
 
   public static async getMangaDirectory(page: number) {
+    return this.withCache(`getMangaDirectory:${page}`, () =>
+      this.fetchMangaDirectory(page),
+    );
+  }
+
+  private static async fetchMangaDirectory(page: number) {
     const result: Record<string, any> = {};
 
     try {
@@ -75,6 +110,12 @@ export class Fetcher {
   }
 
   public static async getMangaInfo(mangaName: string) {
+    return this.withCache(`getMangaInfo:${mangaName}`, () =>
+      this.fetchMangaInfo(mangaName),
+    );
+  }
+
+  private static async fetchMangaInfo(mangaName: string) {
     const result: Record<string, any> = {};
 
     try {
@@ -117,6 +158,10 @@ export class Fetcher {
   }
 
   public static async getMangaUpdates() {
+    return this.withCache("getMangaUpdates", () => this.fetchMangaUpdates());
+  }
+
+  private static async fetchMangaUpdates() {
     const results: {
       title: string;
       chapter: number;
@@ -164,6 +209,10 @@ export class Fetcher {
   }
 
   public static async getMangaFeed() {
+    return this.withCache("getMangaFeed", () => this.fetchMangaFeed());
+  }
+
+  private static async fetchMangaFeed() {
     const result: Record<string, any> = [];
 
     try {
@@ -192,6 +241,12 @@ export class Fetcher {
   }
 
   public static async getMangaChapters(mangaId: string, chapterId: string) {
+    return this.withCache(`getMangaChapters:${mangaId}:${chapterId}`, () =>
+      this.fetchMangaChapters(mangaId, chapterId),
+    );
+  }
+
+  private static async fetchMangaChapters(mangaId: string, chapterId: string) {
     const chapterPages: any[] = [];
     const url = `${apiBaseUrl.demonicscans}/title/${mangaId}/chapter/${chapterId}/1`;
 
