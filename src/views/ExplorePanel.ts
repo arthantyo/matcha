@@ -41,7 +41,7 @@ export class ExplorePanel {
           vscode.Uri.joinPath(extensionUri, "media"),
           vscode.Uri.joinPath(extensionUri, "out"),
         ],
-      }
+      },
     );
 
     ExplorePanel.currentPanel = new ExplorePanel(panel, extensionUri);
@@ -59,8 +59,9 @@ export class ExplorePanel {
           break;
         case "change_manga_directory":
           const mangaSearchedDirectory = await Fetcher.getMangaSearch(
-            msg.data.query
+            msg.data.query,
           );
+
           webview.postMessage({
             type: "change_manga_directory",
             data: mangaSearchedDirectory,
@@ -80,16 +81,16 @@ export class ExplorePanel {
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "out", "explore-panel.js")
+      vscode.Uri.joinPath(this._extensionUri, "out", "explore-panel.js"),
     );
     const styleResetUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
+      vscode.Uri.joinPath(this._extensionUri, "media", "reset.css"),
     );
     const styleVSCodeUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css")
+      vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css"),
     );
     const styleMainUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "out", "explore-panel.css")
+      vscode.Uri.joinPath(this._extensionUri, "out", "explore-panel.css"),
     );
 
     const nonce = getNonce();

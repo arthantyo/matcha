@@ -16,6 +16,7 @@
       switch (msg.type) {
         case "manga_directory":
         case "change_manga_directory":
+        console.log(msg.data.results);
           mangas = msg.data.results;
           break;
       }
@@ -98,7 +99,7 @@
         <a href="/" class="bg-green-400" on:click={() => dispatchMangaInfo(i)}>
           <img
             class="hover:translate-x-1 hover:-translate-y-1 delay-50 duration-100 h-96 w-screen bg-fullPercent object-fill"
-            src={`https://api.consumet.org/utils/image-proxy?url=${manga.image}&referer=${manga.headerForImage.Referer}`}
+            src={`${manga.image}`}
             alt={`${manga.id}-image`}
             loading="lazy"
             on:error={() => {

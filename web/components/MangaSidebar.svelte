@@ -14,6 +14,7 @@
       switch (msg.type) {
         case "manga_info":
           manga = msg.data;
+          console.log(manga);
           loaded = true;
           break;
       }
@@ -64,7 +65,7 @@
       class="mb-4 h-72 object-scale-down w-full rounded-md bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 p-1"
     >
       <img
-        src={`https://api.consumet.org/utils/image-proxy?url=${manga.image}&referer=${manga.headers.Referer}`}
+        src={`${manga.image}`}
         alt="manga_image"
         class="object-cover w-full h-full rounded-sm"
         on:error={() => {

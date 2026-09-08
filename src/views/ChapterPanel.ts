@@ -21,7 +21,7 @@ export class ChapterPanel {
   constructor(
     panel: vscode.WebviewPanel,
     extensionUri: vscode.Uri,
-    manga: IMangaContext
+    manga: IMangaContext,
   ) {
     this._panel = panel;
     this._extensionUri = extensionUri;
@@ -55,7 +55,7 @@ export class ChapterPanel {
           vscode.Uri.joinPath(extensionUri, "media"),
           vscode.Uri.joinPath(extensionUri, "out"),
         ],
-      }
+      },
     );
 
     ChapterPanel.currentPanel = new ChapterPanel(panel, extensionUri, manga);
@@ -66,7 +66,11 @@ export class ChapterPanel {
 
     this._panel.webview.html = this._getHtmlForWebview(webview);
 
-    const pages = await Fetcher.getMangaChapters(this._manga.chapterId);
+    console.log(this._manga);
+    const pages = await Fetcher.getMangaChapters(
+      this._manga.manga.id,
+      this._manga.chapterId,
+    );
 
     const { manga, chapterTitle, previousChapter, nextChapter } = this._manga;
 
@@ -90,40 +94,53 @@ export class ChapterPanel {
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "out", "chapter-panel.js")
+      vscode.Uri.joinPath(this._extensionUri, "out", "chapter-panel.js"),
     );
     const styleResetUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
+      vscode.Uri.joinPath(this._extensionUri, "media", "reset.css"),
     );
     const styleVSCodeUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css")
+      vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css"),
     );
     const styleMainUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "out", "chapter-panel.css")
+      vscode.Uri.joinPath(this._extensionUri, "out", "chapter-panel.css"),
     );
 
     const nonce = getNonce();
 
     return `
-        <!DOCTYPE html>
-		<html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta http-equiv="Content-Security-Policy" content="default-src; connect-src ${apiBaseUrl.manga} ${apiBaseUrl.service}; img-src https: data:; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <link href="${styleResetUri}" rel="stylesheet">
-                <link href="${styleVSCodeUri}" rel="stylesheet">
-                <link href="${styleMainUri}" rel="stylesheet">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
 
-                <script nonce="${nonce}">
-                    const tsvscode = acquireVsCodeApi();
-                </script>
-            </head>
-            <body>
+    <meta
+        http-equiv="Content-Security-Policy"
+        content="
+            default-src 'none';
+            connect-src ${webview.cspSource} ${apiBaseUrl.demonicscans} ${apiBaseUrl.news};
+            img-src ${webview.cspSource} https: data:;
+            style-src ${webview.cspSource};
+            script-src 'nonce-${nonce}';
+        "
+    >
 
-            </body>
-            <script nonce="${nonce}" src="${scriptUri}"></script>
-        </html>`;
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="${styleResetUri}" rel="stylesheet">
+    <link href="${styleVSCodeUri}" rel="stylesheet">
+    <link href="${styleMainUri}" rel="stylesheet">
+
+    <script nonce="${nonce}">
+        const tsvscode = acquireVsCodeApi();
+    </script>
+</head>
+
+<body>
+</body>
+
+<script nonce="${nonce}" src="${scriptUri}"></script>
+</html>`;
   }
   public dispose() {
     ChapterPanel.currentPanel = undefined;

@@ -3,7 +3,6 @@ import axios from "axios";
 import { load } from "cheerio";
 import { XMLParser } from "fast-xml-parser";
 import { apiBaseUrl } from "./Constants";
-import { extractKey } from "./Util";
 
 export class Fetcher {
   public static async getMangaQuote() {
@@ -12,33 +11,30 @@ export class Fetcher {
   }
 
   public static async getMangaSearch(query: string) {
-    const { data } = await axios.get(
-      `${apiBaseUrl.service}/manga/mangahere/${query}`
-    );
-
-    return data;
-  }
-
-  public static async getMangaDirectory(page: number) {
     const result: Record<string, any> = {};
 
     try {
       const { data } = await axios.get(
-        `${apiBaseUrl.manga}/directory/${page}.htm`
+        `${apiBaseUrl.demonicscans}/search.php?manga=${encodeURIComponent(query)}`,
       );
       const $ = load(data);
 
-      result.hasNextPage =
-        $("div.pager-list-left > a.active").next().text() !== ">";
+      result.results = $("body a:has(img)")
+        .map((_i, element) => {
+          const anchor = $(element);
+          const href = anchor.attr("href");
+          const id = href?.match(/\/manga\/([^/?#]+)/)?.[1];
 
-      result.results = $("div.container > div > div > ul > li")
-        .map((_i, el) => ({
-          id: $(el).find("a").attr("href")?.split("/")[2]!,
-          title: $(el).find("p.manga-list-1-item-title > a").text(),
-          subTitle: $(el).find("p.manga-list-1-item-subtitle > a").text(),
-          image: $(el).find("a > img").attr("src"),
-          headerForImage: { Referer: apiBaseUrl.manga },
-        }))
+          if (!id) {
+            return null;
+          }
+
+          return {
+            id,
+            title: anchor.find("div").first().text().trim(),
+            image: anchor.find("img").first().attr("src"),
+          };
+        })
         .get();
 
       return result;
@@ -47,12 +43,124 @@ export class Fetcher {
     }
   }
 
-  public static async getMangaInfo(id: string) {
-    const { data } = await axios.get(
-      `${apiBaseUrl.service}/manga/mangahere/info?id=${id}`
-    );
+  public static async getMangaDirectory(page: number) {
+    const result: Record<string, any> = {};
 
-    return data;
+    try {
+      const { data } = await axios.get(
+        `${apiBaseUrl.demonicscans}/advanced.php?list=${page}`,
+      );
+      const $ = load(data);
+
+      result.hasNextPage =
+        $(".pagination li").filter((_i, el) => $(el).text().trim() === "Next")
+          .length > 0;
+
+      result.results = $("#advanced-content > .advanced-element")
+        .map((_i, el) => {
+          const a = $(el).find("a").first();
+
+          return {
+            id: a.attr("href")?.split("/manga/")[1]!,
+            title: a.attr("title"),
+            image: a.find("img").attr("src"),
+          };
+        })
+        .get();
+
+      return result;
+    } catch (err) {
+      throw new Error((err as Error).message);
+    }
+  }
+
+  public static async getMangaInfo(mangaName: string) {
+    const result: Record<string, any> = {};
+
+    try {
+      const { data } = await axios.get(
+        `${apiBaseUrl.demonicscans}/manga/${mangaName}`,
+      );
+      const $ = load(data);
+
+      const firstChapterHref = $("#chapters-list li a.chplinks")
+        .first()
+        .attr("href");
+      const mangaId = firstChapterHref?.match(
+        /\/title\/([^/]+)\/chapter\//,
+      )?.[1];
+
+      result.id = mangaId ?? mangaName;
+      result.title = $("h1.big-fat-titles").text().trim();
+      result.image = $("#manga-page img").attr("src");
+
+      result.chapters = $("#chapters-list li")
+        .map((_i, el) => {
+          const a = $(el).find("a.chplinks");
+          const href = a.attr("href")!;
+          const params = new URLSearchParams(href.split("?")[1]);
+          const chapterId = params.get("chapter");
+
+          return {
+            id: chapterId,
+            title: a.attr("title") ?? `Chapter ${chapterId}`,
+            chapter: parseFloat(chapterId ?? "0"),
+            url: `${apiBaseUrl.demonicscans}${href}`,
+          };
+        })
+        .get();
+
+      return result;
+    } catch (err) {
+      throw new Error((err as Error).message);
+    }
+  }
+
+  public static async getMangaUpdates() {
+    const results: {
+      title: string;
+      chapter: number;
+      url: string;
+      source: string;
+    }[] = [];
+    const source = "demonicscans";
+
+    try {
+      const { data } = await axios.get(
+        `${apiBaseUrl.demonicscans}/lastupdates.php`,
+      );
+      const $ = load(data);
+
+      $("#updates-container > .updates-element").each((_i, el) => {
+        const titleEl = $(el).find("h2 > a").first();
+        const title = titleEl.text().trim();
+        if (!title) {
+          return;
+        }
+
+        const chapterLink = $(el).find(".chap-date a.chplinks").first();
+        const chapterText = chapterLink
+          .text()
+          .trim()
+          .match(/(\d+(?:\.\d+)?)/);
+        const chapterHref = chapterLink.attr("href");
+
+        if (!chapterText || !chapterHref) {
+          return;
+        }
+
+        results.push({
+          title,
+          chapter: parseFloat(chapterText[1]),
+          url: `${apiBaseUrl.demonicscans}/${chapterHref}`,
+          source,
+        });
+      });
+
+      return results;
+    } catch (err) {
+      throw new Error((err as Error).message);
+    }
   }
 
   public static async getMangaFeed() {
@@ -60,7 +168,7 @@ export class Fetcher {
 
     try {
       const { data } = await axios.get(
-        `${apiBaseUrl.news}/news/rss.xml?ann-edition=us`
+        `${apiBaseUrl.news}/news/rss.xml?ann-edition=us`,
       );
       const json = new XMLParser().parse(data);
       const { item } = json.rss.channel;
@@ -83,99 +191,26 @@ export class Fetcher {
     return result;
   }
 
-  public static async getMangaChapters(chapterId: string) {
+  public static async getMangaChapters(mangaId: string, chapterId: string) {
     const chapterPages: any[] = [];
-    const url = `${apiBaseUrl.manga}/manga/${chapterId}/1.html`;
+    const url = `${apiBaseUrl.demonicscans}/title/${mangaId}/chapter/${chapterId}/1`;
 
     try {
-      const { data } = await axios.get(url, {
-        headers: {
-          cookie: "isAdult=1",
-        },
-      });
+      const { data } = await axios.get(url);
 
       const $ = load(data);
 
-      const copyrightHandle =
-        $("p.detail-block-content").text().match("Dear user") ||
-        $("p.detail-block-content").text().match("blocked");
-      if (copyrightHandle) {
-        throw Error(copyrightHandle.input?.trim());
-      }
-
-      const bar = $("script[src*=chapter_bar]").data();
-      const html = $.html();
-      if (typeof bar !== "undefined") {
-        const ss = html.indexOf("eval(function(p,a,c,k,e,d)");
-        const se = html.indexOf("</script>", ss);
-        const s = html.substring(ss, se).replace("eval", "");
-        const ds = eval(s) as string;
-
-        const urls = ds.split("['")[1].split("']")[0].split("','");
-
-        urls.map((url, i) =>
+      $("img.imgholder").each((page, element) => {
+        const imageUrl = $(element).attr("src");
+        if (imageUrl) {
           chapterPages.push({
-            page: i,
-            img: `https:${url}`,
-            headerForImage: { Referer: url },
-          })
-        );
-      } else {
-        let sKey = extractKey(html);
-        const chapterIdsl = html.indexOf("chapterid");
-        const chapterId = html
-          .substring(chapterIdsl + 11, html.indexOf(";", chapterIdsl))
-          .trim();
-
-        const chapterPagesElmnt = $(
-          "body > div:nth-child(6) > div > span"
-        ).children("a");
-
-        const pages = parseInt(
-          chapterPagesElmnt.last().prev().attr("data-page") ?? "0"
-        );
-
-        const pageBase = url.substring(0, url.lastIndexOf("/"));
-
-        let resText = "";
-        for (let i = 1; i <= pages; i++) {
-          const pageLink = `${pageBase}/chapterfun.ashx?cid=${chapterId}&page=${i}&key=${sKey}`;
-
-          for (let j = 1; j <= 3; j++) {
-            const { data } = await axios.get(pageLink, {
-              headers: {
-                Referer: url,
-                "X-Requested-With": "XMLHttpRequest",
-                cookie: "isAdult=1",
-              },
-            });
-
-            resText = data as string;
-
-            if (resText) {
-              break;
-            } else {
-              sKey = "";
-            }
-          }
-
-          const ds = eval(resText.replace("eval", ""));
-
-          const baseLinksp = ds.indexOf("pix=") + 5;
-          const baseLinkes = ds.indexOf(";", baseLinksp) - 1;
-          const baseLink = ds.substring(baseLinksp, baseLinkes);
-
-          const imageLinksp = ds.indexOf("pvalue=") + 9;
-          const imageLinkes = ds.indexOf('"', imageLinksp);
-          const imageLink = ds.substring(imageLinksp, imageLinkes);
-
-          chapterPages.push({
-            page: i - 1,
-            img: `https:${baseLink}${imageLink}`,
+            page,
+            img: encodeURI(imageUrl),
             headerForImage: { Referer: url },
           });
         }
-      }
+      });
+
       return chapterPages;
     } catch (err) {
       throw new Error((err as Error).message);

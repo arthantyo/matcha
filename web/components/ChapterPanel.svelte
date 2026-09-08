@@ -14,6 +14,7 @@
       const msg = event.data;
       switch (msg.type) {
         case "manga_chapter":
+          console.log(msg.data)
           result = msg.data;
           loaded = true;
           break;
@@ -56,7 +57,7 @@
 
       {#each result.pages as page}
         <img
-          src={`https://api.consumet.org/utils/image-proxy?url=${page.img}&referer=${page.headerForImage.Referer}`}
+          src={`${page.img}`}
           alt={`manga_chapter_${page.page}`}
           use:lazyImage
           loading="lazy"

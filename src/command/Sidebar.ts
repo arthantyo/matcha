@@ -50,7 +50,7 @@ export class SidebarCommand {
     this.register("open_anime_explorer", {
       execute() {
         vscode.window.showInformationMessage(
-          `Currently under production, please wait!`
+          `Currently under production, please wait!`,
         );
       },
     });
@@ -122,7 +122,7 @@ export class SidebarCommand {
         });
 
         vscode.window.showInformationMessage(
-          `Opening ${manga.title}: ${context.chapterTitle}`
+          `Opening ${manga.title}: ${context.chapterTitle}`,
         );
 
         ChapterPanel.createOrShow(extensionUri, context);
