@@ -15,7 +15,7 @@
 
 ### Happy Update!
 
-I finally found the courage to revamp and maintain this project again. You can install Matcha again! Stay tuned for incoming cool updates!
+After almost 4 years, I finally found the courage to revamp and maintain this project again. You can install Matcha again! Stay tuned for incoming cool updates!
 
 ### Usage
 
@@ -29,8 +29,9 @@ This extension features a number of features:
 
 <img src="./media/screenshot.png">
 
-### Credits
+## Third-Party Services
 
-Matcha wouldn't even be made without these fellas (really eased me as development would be much more complicated).
+This extension is not affiliated with or endorsed by any third-party service it uses.
 
-> https://consumet.org/ -> One of the most reliable manga scraping API available, proxying would be hard without this API :)
+If you operate a supported service and would like your integration removed, please contact
+hello@arthantyo.com.

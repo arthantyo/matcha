@@ -1,13 +1,13 @@
 {
-  "name": "matcha-vscode",
-  "displayName": "Matcha",
+  "name": "matcha-reader",
+  "displayName": "Matcha Reader",
   "description": "Read and track manga from VS Code",
   "version": "1.0.0",
   "icon": "media/logo.png",
   "engines": {
     "vscode": "^1.73.0"
   },
-  "publisher": "heytheretyo",
+  "publisher": "arthantyo",
   "categories": [
     "Other"
   ],
