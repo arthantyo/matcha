@@ -13,9 +13,9 @@
 </div>
 <br>
 
-### Quick Notice
+### Happy Update!
 
-Due to API (proxy api) issues, this extension will not be able to display mangas anymore, for now :(
+I finally found the courage to revamp and maintain this project again. You can install Matcha again! Stay tuned for incoming cool updates!
 
 ### Usage
 

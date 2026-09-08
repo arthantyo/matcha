@@ -18,6 +18,7 @@ export class Storage {
       this.database = new JSONdb(join(configDir, "database.json"), {});
 
       this.database.set("mangaHistory", {});
+      this.database.set("mangaBookmarks", {});
     }
 
     this.database = new JSONdb(join(configDir, "database.json"), {});
@@ -37,6 +38,34 @@ export class Storage {
     const history = this.database.get("mangaHistory");
 
     return history;
+  }
+
+  public static insertMangaBookmark(data: any): void {
+    this.checkDatabase();
+
+    const bookmarks: Record<string, any> =
+      this.database.get("mangaBookmarks") || {};
+
+    bookmarks[data.id] = data;
+
+    this.database.set("mangaBookmarks", bookmarks);
+  }
+
+  public static removeMangaBookmark(mangaId: string): void {
+    this.checkDatabase();
+
+    const bookmarks: Record<string, any> =
+      this.database.get("mangaBookmarks") || {};
+
+    delete bookmarks[mangaId];
+
+    this.database.set("mangaBookmarks", bookmarks);
+  }
+
+  public static getMangaBookmarks(): Record<string, any> {
+    this.checkDatabase();
+
+    return this.database.get("mangaBookmarks") || {};
   }
 
   public static reset() {

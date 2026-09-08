@@ -77,6 +77,16 @@ export class SidebarCommand {
         });
       },
     });
+
+    this.register("show_bookmarks", {
+      async execute() {
+        const mangaBookmarks = Storage.getMangaBookmarks();
+        webview._webview?.webview.postMessage({
+          type: "bookmarks",
+          data: mangaBookmarks,
+        });
+      },
+    });
   }
 
   private async registerMangaCommands() {
@@ -91,6 +101,24 @@ export class SidebarCommand {
         webview._webview?.webview.postMessage({
           type: "manga_info",
           data: mangaInfo,
+        });
+      },
+    });
+
+    this.register("toggle_bookmark", {
+      async execute(msg) {
+        const manga = msg.data.manga;
+        const bookmarks = Storage.getMangaBookmarks();
+
+        if (bookmarks[manga.id]) {
+          Storage.removeMangaBookmark(manga.id);
+        } else {
+          Storage.insertMangaBookmark(manga);
+        }
+
+        webview._webview?.webview.postMessage({
+          type: "bookmarks",
+          data: Storage.getMangaBookmarks(),
         });
       },
     });

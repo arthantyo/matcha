@@ -66,7 +66,6 @@ export class ChapterPanel {
 
     this._panel.webview.html = this._getHtmlForWebview(webview);
 
-    console.log(this._manga);
     const pages = await Fetcher.getMangaChapters(
       this._manga.manga.id,
       this._manga.chapterId,

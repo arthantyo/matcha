@@ -5,10 +5,20 @@
 
   export let mangaId: string;
   let manga: Record<string, any> = {};
+  let bookmarks: Record<string, any> = {};
 
   let loaded = false;
 
+  $: isBookmarked = !!bookmarks[manga.id ?? mangaId];
+
   onMount(() => {
+    tsvscode.postMessage({
+      type: "default",
+      data: {
+        command: "show_bookmarks",
+      },
+    });
+
     window.addEventListener("message", (event) => {
       const msg = event.data;
       switch (msg.type) {
@@ -16,6 +26,9 @@
           manga = msg.data;
           console.log(manga);
           loaded = true;
+          break;
+        case "bookmarks":
+          bookmarks = msg.data;
           break;
       }
     });
@@ -50,6 +63,20 @@
       "https://raw.githubusercontent.com/ricemashi/matcha/main/media/no_image.png";
   };
 
+  const toggleBookmark = () => {
+    tsvscode.postMessage({
+      type: "manga",
+      data: {
+        command: "toggle_bookmark",
+        manga: {
+          id: manga.id ?? mangaId,
+          title: manga.title,
+          image: manga.image,
+        },
+      },
+    });
+  };
+
   const dispatch = createEventDispatcher();
 
   const returnToMenu = () => {
@@ -74,7 +101,6 @@
       />
     </div>
     <h1 class="text-center text-lg font-bold mb-1">{manga.title}</h1>
-    <p class="text-center text-base text-slate-400">{manga.authors}</p>
 
     <div class="my-4 flex flex-col gap-2 h-72 overflow-y-scroll scrollbar-hide">
       {#each manga.chapters as chapter, i}
@@ -85,7 +111,6 @@
             class=" text-base font-light hover:text-green-400"
             >{chapter.title}</a
           >
-          <p class="text-xs dark:text-slate-400">{chapter.releasedDate}</p>
         </div>
       {/each}
     </div>
@@ -104,6 +129,13 @@
       on:click={() =>
         showMangaChapter(manga.chapters.at(-1), manga.chapters.length - 1)}
       >First Chapter</Button
+    >
+
+    <Button
+      extraStyle="my-2"
+      variant={isBookmarked ? "accentTwo" : "secondary"}
+      on:click={toggleBookmark}
+      >{isBookmarked ? "Remove Bookmark" : "Add Bookmark"}</Button
     >
 
     <Button extraStyle="my-2" variant="secondary" on:click={returnToMenu}

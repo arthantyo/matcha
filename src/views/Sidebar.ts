@@ -12,7 +12,7 @@ export class Sidebar implements vscode.WebviewViewProvider {
 
   public async resolveWebviewView(
     webviewView: vscode.WebviewView,
-    _context: vscode.WebviewViewResolveContext
+    _context: vscode.WebviewViewResolveContext,
   ) {
     if (!this._webview) {
       this._webview = webviewView;
@@ -28,6 +28,11 @@ export class Sidebar implements vscode.WebviewViewProvider {
     const command = new SidebarCommand(this, this._extensionUri);
 
     webviewView.webview.onDidReceiveMessage(async (msg) => {
+      if (msg.type === "manga_triggered") {
+        EventEmitterHandler.getInstance().emit("manga_triggered", msg);
+        return;
+      }
+
       if (msg.type !== "default" || "manga" || "anime") {
         command.execute(msg.data.command, msg);
       }
@@ -47,16 +52,16 @@ export class Sidebar implements vscode.WebviewViewProvider {
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     const styleResetUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
+      vscode.Uri.joinPath(this._extensionUri, "media", "reset.css"),
     );
     const styleVSCodeUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css")
+      vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css"),
     );
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "out", "sidebar.js")
+      vscode.Uri.joinPath(this._extensionUri, "out", "sidebar.js"),
     );
     const styleMainUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "out", "sidebar.css")
+      vscode.Uri.joinPath(this._extensionUri, "out", "sidebar.css"),
     );
 
     const nonce = getNonce();

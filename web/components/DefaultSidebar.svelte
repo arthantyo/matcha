@@ -10,6 +10,7 @@
     manga: [],
     anime: [],
   };
+  let bookmarks: any[] = [];
 
   onMount(async () => {
     tsvscode.postMessage({
@@ -26,6 +27,13 @@
       },
     });
 
+    tsvscode.postMessage({
+      type: "default",
+      data: {
+        command: "show_bookmarks",
+      },
+    });
+
     window.addEventListener("message", (event) => {
       const msg = event.data;
       switch (msg.type) {
@@ -34,6 +42,9 @@
           break;
         case "history":
           history.manga = Object.values(msg.data.manga);
+          break;
+        case "bookmarks":
+          bookmarks = Object.values(msg.data);
           break;
       }
     });
@@ -66,6 +77,15 @@
         chapterIndex: manga.chapter.chapterIdx,
         chapterId: manga.chapter.chapterId,
         chapterTitle: manga.chapter.chapterTitle,
+      },
+    });
+  };
+
+  const openBookmarkedManga = (mangaId: string) => {
+    tsvscode.postMessage({
+      type: "manga_triggered",
+      data: {
+        manga_id: mangaId,
       },
     });
   };
@@ -106,24 +126,44 @@
   </div>
 
   <div class="flex flex-col gap-4 my-7 overflow-y-scroll">
+    <h1 class="text-xl font-bold">Bookmarks</h1>
+
+    <div
+      class="flex flex-col mt-1.5 gap-4 h-48 overflow-y-scroll scrollbar-hide"
+    >
+      {#each bookmarks as manga}
+        <div class="my-0.5">
+          <a
+            on:click={() => openBookmarkedManga(manga.id)}
+            href="/"
+            class=" text-base font-light hover:text-green-400">{manga.title}</a
+          >
+        </div>
+      {:else}
+        <p class="text-sm dark:text-slate-400">No bookmarks yet.</p>
+      {/each}
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-4 my-7 overflow-y-scroll">
     <h1 class="text-xl font-bold">Continue Reading</h1>
 
-    <div class="inline-flex  w-full rounded-md " role="group">
+    <!-- <div class="inline-flex  w-full rounded-md " role="group"> -->
       <!-- svelte-ignore a11y-missing-attribute -->
-      <a
+      <!-- <a
         type="button"
         class="py-2 px-4 text-sm  w-full font-medium cursor-pointer bg-transparent rounded-l-lg border border-gray-500  hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white  dark:hover:bg-gray-700 dark:focus:bg-gray-700"
       >
         Anime
-      </a>
+      </a> -->
       <!-- svelte-ignore a11y-missing-attribute -->
-      <a
+      <!-- <a
         type="button"
         class="py-2 px-4 text-sm w-full font-medium cursor-pointer bg-transparent rounded-r-md border border-gray-500 hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white  dark:hover:bg-gray-700 dark:focus:bg-gray-700"
       >
         Manga
-      </a>
-    </div>
+      </a> -->
+    <!-- </div> -->
 
     <div
       class="flex flex-col mt-1.5 gap-4 h-48 overflow-y-scroll scrollbar-hide"

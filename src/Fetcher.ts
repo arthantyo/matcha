@@ -246,6 +246,7 @@ export class Fetcher {
     );
   }
 
+  // gets the pages for chapter lol (dont mind the naming)
   private static async fetchMangaChapters(mangaId: string, chapterId: string) {
     const chapterPages: any[] = [];
     const url = `${apiBaseUrl.demonicscans}/title/${mangaId}/chapter/${chapterId}/1`;
@@ -256,7 +257,12 @@ export class Fetcher {
       const $ = load(data);
 
       $("img.imgholder").each((page, element) => {
+        if (page === 0) {
+          return;
+        }
+
         const imageUrl = $(element).attr("src");
+
         if (imageUrl) {
           chapterPages.push({
             page,
