@@ -28,7 +28,7 @@ This extension features a number of features:
 
 ### Preview
 
-<img src="./media/screenshot.png" width="800">
+<img src="./media/new-screenshot.png" width="800">
 
 <img src="./media/anime-showcase.gif" width="800">
 
