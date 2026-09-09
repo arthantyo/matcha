@@ -28,9 +28,9 @@ This extension features a number of features:
 
 ### Preview
 
-<img src="./media/screenshot.png">
+<img src="./media/screenshot.png" width="800">
 
-<video src="./media/anime-showcase.mp4"></video>
+<img src="./media/anime-showcase.gif" width="800">
 
 ## Third-Party Services
 
