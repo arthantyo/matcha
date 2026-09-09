@@ -19,6 +19,8 @@ export class Storage {
 
       this.database.set("mangaHistory", {});
       this.database.set("mangaBookmarks", {});
+      this.database.set("animeHistory", {});
+      this.database.set("animeBookmarks", {});
     }
 
     this.database = new JSONdb(join(configDir, "database.json"), {});
@@ -66,6 +68,51 @@ export class Storage {
     this.checkDatabase();
 
     return this.database.get("mangaBookmarks") || {};
+  }
+
+  public static insertAnimeHistory(data: any): void {
+    this.checkDatabase();
+
+    const history: Record<string, any> =
+      this.database.get("animeHistory") || {};
+
+    history[data.title] = data;
+
+    this.database.set("animeHistory", history);
+  }
+
+  public static getAnimeHistory() {
+    this.checkDatabase();
+
+    return this.database.get("animeHistory") || {};
+  }
+
+  public static insertAnimeBookmark(data: any): void {
+    this.checkDatabase();
+
+    const bookmarks: Record<string, any> =
+      this.database.get("animeBookmarks") || {};
+
+    bookmarks[data.id] = data;
+
+    this.database.set("animeBookmarks", bookmarks);
+  }
+
+  public static removeAnimeBookmark(animeId: string): void {
+    this.checkDatabase();
+
+    const bookmarks: Record<string, any> =
+      this.database.get("animeBookmarks") || {};
+
+    delete bookmarks[animeId];
+
+    this.database.set("animeBookmarks", bookmarks);
+  }
+
+  public static getAnimeBookmarks(): Record<string, any> {
+    this.checkDatabase();
+
+    return this.database.get("animeBookmarks") || {};
   }
 
   public static reset() {

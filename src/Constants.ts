@@ -1,7 +1,8 @@
 export const apiBaseUrl = {
-  service: "https://api.consumet.org",
-  manga: "https://www.mangahere.cc/",
   news: "https://www.animenewsnetwork.com/",
   quote: "https://animechan.vercel.app",
   demonicscans: "https://demonicscans.org",
+  animeonsenApi: "https://api.animeonsen.xyz",
+  animeonsenAuth: "https://auth.animeonsen.xyz",
+  animeonsenCdn: "https://cdn.animeonsen.xyz",
 };

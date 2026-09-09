@@ -4,8 +4,8 @@ import EventEmitterHandler from "../Emitter";
 import { Fetcher } from "../Fetcher";
 import { getNonce } from "../Util";
 
-export class ExplorePanel {
-  public static currentPanel: ExplorePanel | undefined;
+export class MangaExplorePanel {
+  public static currentPanel: MangaExplorePanel | undefined;
   private readonly _panel: vscode.WebviewPanel;
   private readonly _extensionUri: vscode.Uri;
 
@@ -25,13 +25,13 @@ export class ExplorePanel {
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
 
-    if (ExplorePanel.currentPanel) {
-      ExplorePanel.currentPanel._panel.reveal(column);
+    if (MangaExplorePanel.currentPanel) {
+      MangaExplorePanel.currentPanel._panel.reveal(column);
       return;
     }
 
     const panel = vscode.window.createWebviewPanel(
-      "explore-panel",
+      "manga-explore-panel",
       "Explore",
       column || vscode.ViewColumn.One,
       {
@@ -44,7 +44,7 @@ export class ExplorePanel {
       },
     );
 
-    ExplorePanel.currentPanel = new ExplorePanel(panel, extensionUri);
+    MangaExplorePanel.currentPanel = new MangaExplorePanel(panel, extensionUri);
   }
 
   private async _update() {
@@ -81,7 +81,7 @@ export class ExplorePanel {
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "out", "explore-panel.js"),
+      vscode.Uri.joinPath(this._extensionUri, "out", "manga-explore-panel.js"),
     );
     const styleResetUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "reset.css"),
@@ -90,7 +90,7 @@ export class ExplorePanel {
       vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css"),
     );
     const styleMainUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "out", "explore-panel.css"),
+      vscode.Uri.joinPath(this._extensionUri, "out", "manga-explore-panel.css"),
     );
 
     const nonce = getNonce();
@@ -117,7 +117,7 @@ export class ExplorePanel {
         </html>`;
   }
   public dispose() {
-    ExplorePanel.currentPanel = undefined;
+    MangaExplorePanel.currentPanel = undefined;
 
     this._panel.dispose();
 

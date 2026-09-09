@@ -1,9 +1,13 @@
 import * as vscode from "vscode";
-import { ExplorePanel } from "../views/ExplorePanel";
+import { MangaExplorePanel } from "../views/MangaExplorePanel";
+import { AnimeExplorePanel } from "../views/AnimeExplorePanel";
 import { Storage } from "../Storage";
 import { Sidebar } from "../views/Sidebar";
 import { Fetcher } from "../Fetcher";
+import { AnimeOnsenFetcher } from "../AnimeOnsenFetcher";
 import { ChapterPanel } from "../views/ChapterPanel";
+import { VideoPlayerPanel } from "../views/VideoPlayerPanel";
+import { MediaProxy } from "../MediaProxy";
 
 interface ICommand {
   execute(msg: any): void;
@@ -23,6 +27,7 @@ export class SidebarCommand {
 
     this.registerDefaultCommands();
     this.registerMangaCommands();
+    this.registerAnimeCommands();
   }
 
   register(commandName: string, command: ICommand) {
@@ -43,15 +48,13 @@ export class SidebarCommand {
 
     this.register("open_manga_explorer", {
       execute() {
-        ExplorePanel.createOrShow(extensionUri);
+        MangaExplorePanel.createOrShow(extensionUri);
       },
     });
 
     this.register("open_anime_explorer", {
       execute() {
-        vscode.window.showInformationMessage(
-          `Currently under production, please wait!`,
-        );
+        AnimeExplorePanel.createOrShow(extensionUri);
       },
     });
 
@@ -154,6 +157,80 @@ export class SidebarCommand {
         );
 
         ChapterPanel.createOrShow(extensionUri, context);
+      },
+    });
+  }
+
+  private async registerAnimeCommands() {
+    const rootThis = this;
+    const webview = this._webview;
+    const extensionUri = this._extensionUri;
+
+    this.register("show_anime_info", {
+      async execute(msg) {
+        const animeInfo = await AnimeOnsenFetcher.getAnimeInfo(
+          msg.data.anime_id,
+        );
+
+        webview._webview?.webview.postMessage({
+          type: "anime_info",
+          data: animeInfo,
+        });
+      },
+    });
+
+    this.register("toggle_anime_bookmark", {
+      async execute(msg) {
+        const anime = msg.data.anime;
+        const bookmarks = Storage.getAnimeBookmarks();
+
+        if (bookmarks[anime.id]) {
+          Storage.removeAnimeBookmark(anime.id);
+        } else {
+          Storage.insertAnimeBookmark(anime);
+        }
+
+        webview._webview?.webview.postMessage({
+          type: "anime_bookmarks",
+          data: Storage.getAnimeBookmarks(),
+        });
+      },
+    });
+
+    this.register("open_anime_episode", {
+      execute: async (msg) => {
+        const anime = msg.data.anime;
+        const episode = msg.data.episode;
+
+        const stream = await AnimeOnsenFetcher.getAnimeStream(
+          anime.id,
+          episode.episodeNumber,
+        );
+
+        rootThis._animeHistory[anime.title] = {
+          episode,
+          title: anime.title,
+        };
+
+        Storage.insertAnimeHistory({
+          episode,
+          title: anime.title,
+        });
+
+        vscode.window.showInformationMessage(
+          `Opening ${anime.title}: ${episode.title}`,
+        );
+
+        const proxiedUrl = await MediaProxy.getProxyUrl(stream.url);
+
+        const subtitleUrl =
+          `https://api.animeonsen.xyz/v4/subtitles/` +
+          `${anime.id}/en-US/${episode.episodeNumber}`;
+
+        const proxiedSubtitleUrl =
+          await MediaProxy.getSubtitleProxyUrl(subtitleUrl);
+
+        VideoPlayerPanel.createOrShow(extensionUri, proxiedUrl, proxiedSubtitleUrl);
       },
     });
   }

@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { Storage } from "./Storage";
 import { Sidebar } from "./views/Sidebar";
+import { VideoPlayerPanel } from "./views/VideoPlayerPanel";
 
 export function activate(ctx: vscode.ExtensionContext) {
   const pingCommand = vscode.commands.registerCommand("ping", () => {
@@ -20,7 +21,7 @@ export function activate(ctx: vscode.ExtensionContext) {
             vscode.commands.executeCommand("workbench.action.reloadWindow");
           }
         });
-    }
+    },
   );
   ctx.subscriptions.push(clearHistoryCommand);
 
@@ -30,7 +31,7 @@ export function activate(ctx: vscode.ExtensionContext) {
       webviewOptions: {
         retainContextWhenHidden: true,
       },
-    })
+    }),
   );
 }
 

@@ -47,6 +47,14 @@
           "icon": "media/logo.svg",
           "contextualTitle": "Matcha"
         }
+      ],
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "matcha.videoPlayer",
+          "icon": "media/logo.svg",
+          "name": "Anime Player"
+        }
       ]
     }
   },
@@ -107,6 +115,7 @@
   "dependencies": {
     "axios": "^1.1.3",
     "cheerio": "^1.0.0-rc.12",
+    "dashjs": "^5.2.1",
     "fast-xml-parser": "^4.0.12",
     "simple-json-db": "^2.0.0",
     "svelte-lazy-image": "^0.5.1"

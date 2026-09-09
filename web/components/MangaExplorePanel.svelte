@@ -16,7 +16,6 @@
       switch (msg.type) {
         case "manga_directory":
         case "change_manga_directory":
-        console.log(msg.data.results);
           mangas = msg.data.results;
           break;
       }

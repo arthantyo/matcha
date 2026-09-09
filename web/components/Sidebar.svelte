@@ -2,9 +2,11 @@
   import { onMount } from "svelte";
   import DefaultSidebar from "./DefaultSidebar.svelte";
   import MangaSidebar from "./MangaSidebar.svelte";
+  import AnimeSidebar from "./AnimeSidebar.svelte";
 
   let state: "default" | "manga" | "anime" = "default";
   let mangaId = "";
+  let animeId = "";
 
   onMount(async () => {
     window.addEventListener("message", (event) => {
@@ -13,6 +15,10 @@
         case "manga_triggered":
           state = "manga";
           mangaId = msg.data.manga_id;
+          break;
+        case "anime_triggered":
+          state = "anime";
+          animeId = msg.data.anime_id;
           break;
       }
     });
@@ -30,5 +36,7 @@
     <DefaultSidebar />
   {:else if state == "manga"}
     <MangaSidebar {mangaId} on:message={handleEventDispatcher} />
+  {:else if state == "anime"}
+    <AnimeSidebar {animeId} on:message={handleEventDispatcher} />
   {/if}
 </main>

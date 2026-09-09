@@ -1,4 +1,4 @@
-import App from "../components/ExplorePanel.svelte";
+import App from "../components/AnimeExplorePanel.svelte";
 
 const app = new App({
   target: document.body,

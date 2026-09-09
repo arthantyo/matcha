@@ -33,9 +33,21 @@ export class Sidebar implements vscode.WebviewViewProvider {
         return;
       }
 
+      if (msg.type === "anime_triggered") {
+        EventEmitterHandler.getInstance().emit("anime_triggered", msg);
+        return;
+      }
+
       if (msg.type !== "default" || "manga" || "anime") {
         command.execute(msg.data.command, msg);
       }
+    });
+
+    EventEmitterHandler.getInstance().on("anime_triggered", (msg) => {
+      webviewView.webview.postMessage({
+        type: "anime_triggered",
+        data: msg.data,
+      });
     });
 
     EventEmitterHandler.getInstance().on("manga_triggered", (msg) => {
