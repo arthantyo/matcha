@@ -22,12 +22,15 @@ After almost 4 years, I finally found the courage to revamp and maintain this pr
 This extension features a number of features:
 
 - Read manga directly while coding
+- Watch anime directly while coding (no audio yet, but subtitles)
 - Get manga and anime news
 - Save your mangas to your list
 
 ### Preview
 
 <img src="./media/screenshot.png">
+
+<video src="./media/anime-showcase.mp4"></video>
 
 ## Third-Party Services
 
